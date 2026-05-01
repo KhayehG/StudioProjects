@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "530694026218",
+    "project_id": "linguaflow-37",
+    "storage_bucket": "linguaflow-37.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:530694026218:android:5200a87e55bdbfb67a7893",
+        "android_client_info": {
+          "package_name": "com.group37.linguflow.linguaflow"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAhDmxxStYpuFAq1SotplWJXoj1f0AATig"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
