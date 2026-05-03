@@ -13,12 +13,15 @@ class MainShell extends StatefulWidget {
 class _MainShellState extends State<MainShell> {
   int _selectedIndex(String location) {
     if (location.startsWith('/home')) return 0;
-    if (location.startsWith('/lessons') || location.startsWith('/lesson-detail')) {
-      return 1;
-    }
+    if (location.startsWith('/lessons') || location.startsWith('/lesson-detail')) return 1;
     if (location.startsWith('/speech-practice')) return 2;
-    if (location.startsWith('/progress')) return 3;
-    if (location.startsWith('/profile')) return 4;
+    if (location.startsWith('/sign-language') ||
+        location.startsWith('/sign-detail') ||
+        location.startsWith('/sign-camera')) {
+      return 3;
+    }
+    if (location.startsWith('/progress')) return 4;
+    if (location.startsWith('/profile')) return 5;
     return 0;
   }
 
@@ -34,9 +37,12 @@ class _MainShellState extends State<MainShell> {
         context.go('/speech-practice');
         break;
       case 3:
-        context.go('/progress');
+        context.go('/sign-language');
         break;
       case 4:
+        context.go('/progress');
+        break;
+      case 5:
         context.go('/profile');
         break;
     }
@@ -49,19 +55,34 @@ class _MainShellState extends State<MainShell> {
 
     return Scaffold(
       body: widget.child,
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: currentIndex,
-        onTap: (int index) => _onTap(context, index),
-        selectedItemColor: const Color(0xFF2196F3),
-        unselectedItemColor: Colors.grey,
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.menu_book), label: 'Lessons'),
-          BottomNavigationBarItem(icon: Icon(Icons.mic), label: 'Practice'),
-          BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: 'Progress'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-        ],
+      bottomNavigationBar: Container(
+        color: const Color(0xFFEEF0F5),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Container(
+              height: 1,
+              color: const Color(0xFFD1D3D8),
+            ),
+            BottomNavigationBar(
+              currentIndex: currentIndex,
+              onTap: (int index) => _onTap(context, index),
+              backgroundColor: const Color(0xFFEEF0F5),
+              selectedItemColor: const Color(0xFF5B6BE8),
+              unselectedItemColor: const Color(0xFF9A9EB5),
+              type: BottomNavigationBarType.fixed,
+              elevation: 0,
+              items: const <BottomNavigationBarItem>[
+                BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+                BottomNavigationBarItem(icon: Icon(Icons.menu_book), label: 'Lessons'),
+                BottomNavigationBarItem(icon: Icon(Icons.mic), label: 'Practice'),
+                BottomNavigationBarItem(icon: Icon(Icons.sign_language), label: 'Signs'),
+                BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: 'Progress'),
+                BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

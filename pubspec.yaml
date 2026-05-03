@@ -44,8 +44,17 @@ dependencies:
   shared_preferences: ^2.2.3
   fl_chart: ^0.68.0
   flutter_local_notifications: ^17.0.0
+  timezone: ^0.9.4
   cupertino_icons: ^1.0.6
   permission_handler: ^12.0.1
+  cached_network_image: ^3.3.1
+  pdf: ^3.10.8
+  printing: ^5.12.0
+  path_provider: ^2.1.2
+  intl: ^0.19.0
+  camera: ^0.10.5+9
+  tflite_flutter: ^0.11.0
+  image: ^4.1.7
 
 dev_dependencies:
   flutter_test:
@@ -68,6 +77,12 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+
+  assets:
+    - assets/images/signs/
+    - assets/models/hand_landmark.tflite
+    - assets/models/palm_detection.tflite
+    - assets/labels/asl_labels.txt
 
   # To add assets to your application, add an assets section, like this:
   # assets:

@@ -24,11 +24,14 @@ class AuthService {
       'name': name.trim(),
       'email': email.trim(),
       'selectedLanguage': '',
+      'currentLanguage': '',
       'dailyGoal': 10,
       'currentStreak': 0,
       'lastActiveDate': null,
       'badgesEarned': [],
       'chatMessageCount': 0,
+      'xp': 0,
+      'currentLevel': 'beginner',
       'createdAt': FieldValue.serverTimestamp(),
     });
     return cred;

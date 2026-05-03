@@ -6,6 +6,8 @@ class UserProgress {
   final List<String> badgesEarned;
   final List<Map<String, dynamic>> recentQuizScores;
   final double averageQuizScore;
+  final int xp;
+  final String currentLevel;
 
   UserProgress({
     required this.lessonsCompleted,
@@ -15,5 +17,7 @@ class UserProgress {
     required this.badgesEarned,
     required this.recentQuizScores,
     required this.averageQuizScore,
+    required this.xp,
+    required this.currentLevel,
   });
 }

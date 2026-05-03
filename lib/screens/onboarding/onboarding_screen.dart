@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../services/notification_service.dart';
+import '../../widgets/glass_card.dart';
+import '../../widgets/gradient_button.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -50,19 +52,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       await userRef.set(
         <String, dynamic>{
           'selectedLanguage': _selectedLanguage,
+          'currentLanguage': _selectedLanguage,
           'dailyGoal': _selectedGoal,
         },
         SetOptions(merge: true),
       );
 
-      final NotificationService notificationService = NotificationService();
-      await notificationService.scheduleDailyReminder();
-      final String? token = await notificationService.getFCMToken();
-      if (token != null) {
-        await userRef.set(<String, dynamic>{'fcmToken': token}, SetOptions(merge: true));
-      }
+      await NotificationService().scheduleDailyReminder(hour: 8, minute: 0);
+      await NotificationService().getFCMToken();
 
-      final prefs = await SharedPreferences.getInstance();
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setBool('onboarding_complete', true);
 
       if (!mounted) return;
@@ -84,16 +83,33 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Widget _buildPageIndicator() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
-      children: List<Widget>.generate(3, (index) {
+      children: List<Widget>.generate(3, (int index) {
         final bool isActive = index == _currentPage;
-        return AnimatedContainer(
-          duration: const Duration(milliseconds: 250),
+        if (isActive) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: NeuCard(
+              small: true,
+              borderRadius: 12,
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              child: Container(
+                width: 16,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF5B6BE8),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+          );
+        }
+        return Container(
           margin: const EdgeInsets.symmetric(horizontal: 4),
-          width: isActive ? 24 : 10,
+          width: 10,
           height: 10,
-          decoration: BoxDecoration(
-            color: isActive ? const Color(0xFF2196F3) : Colors.grey.shade400,
-            borderRadius: BorderRadius.circular(12),
+          decoration: const BoxDecoration(
+            color: Color(0xFFD1D3D8),
+            shape: BoxShape.circle,
           ),
         );
       }),
@@ -103,10 +119,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Onboarding')),
+      backgroundColor: const Color(0xFFEEF0F5),
+      appBar: AppBar(
+        title: const Text('Onboarding'),
+        backgroundColor: const Color(0xFFEEF0F5),
+        foregroundColor: const Color(0xFF2D2F45),
+        elevation: 0,
+      ),
       body: PopScope(
         canPop: _currentPage == 0,
-        onPopInvokedWithResult: (didPop, result) {
+        onPopInvokedWithResult: (bool didPop, dynamic result) {
           if (didPop) return;
           if (_currentPage > 0) {
             _pageController.previousPage(
@@ -120,120 +142,154 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             children: <Widget>[
               Expanded(
                 child: PageView(
-                controller: _pageController,
-                onPageChanged: (index) => setState(() => _currentPage = index),
-                children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        const Icon(Icons.language, size: 80, color: Color(0xFF2196F3)),
-                        const SizedBox(height: 18),
-                        const Text(
-                          'Welcome to LinguaFlow',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          'Learn Languages Smarter with AI',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 16, color: Colors.grey),
-                        ),
-                        const SizedBox(height: 24),
-                        ElevatedButton(
-                          onPressed: _nextPage,
-                          child: const Text('Next →'),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        const Text(
-                          'What would you like to learn?',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 20),
-                        DropdownButtonFormField<String>(
-                          initialValue: _selectedLanguage,
-                          decoration: const InputDecoration(labelText: 'Language'),
-                          items: const <DropdownMenuItem<String>>[
-                            DropdownMenuItem(value: 'English', child: Text('English')),
-                            DropdownMenuItem(value: 'isiZulu', child: Text('isiZulu')),
-                            DropdownMenuItem(value: 'French', child: Text('French')),
-                            DropdownMenuItem(value: 'Spanish', child: Text('Spanish')),
-                          ],
-                          onChanged: (value) => setState(() => _selectedLanguage = value),
-                        ),
-                        const SizedBox(height: 24),
-                        ElevatedButton(
-                          onPressed: _selectedLanguage == null ? null : _nextPage,
-                          child: const Text('Next →'),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        const Text(
-                          'Set your daily goal',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 20),
-                        ...<int>[5, 10, 15].map((goal) {
-                          final bool selected = _selectedGoal == goal;
-                          return GestureDetector(
-                            onTap: () => setState(() => _selectedGoal = goal),
-                            child: Card(
-                              color: selected ? const Color(0xFFBBDEFB) : null,
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 14,
-                                ),
-                                child: Row(
-                                  children: <Widget>[
-                                    Text(
-                                      '⏱ $goal minutes',
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight:
-                                            selected ? FontWeight.bold : FontWeight.w500,
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                  controller: _pageController,
+                  onPageChanged: (int index) => setState(() => _currentPage = index),
+                  children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            const NeuCard(
+                              borderRadius: 50,
+                              width: 100,
+                              height: 100,
+                              padding: EdgeInsets.zero,
+                              child: Icon(Icons.language, size: 50, color: Color(0xFF5B6BE8)),
+                            ),
+                            const SizedBox(height: 18),
+                            const Text(
+                              'Welcome to LinguaFlow',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 28,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF2D2F45),
                               ),
                             ),
-                          );
-                        }),
-                        const SizedBox(height: 20),
-                        ElevatedButton(
-                          onPressed: (_selectedGoal == null || _isSubmitting)
-                              ? null
-                              : _finishOnboarding,
-                          child: _isSubmitting
-                              ? const SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
-                                )
-                              : const Text('Get Started 🚀'),
+                            const SizedBox(height: 8),
+                            const Text(
+                              'Learn Languages Smarter with AI',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Color(0xFF9A9EB5),
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            GradientButton(label: 'Next →', onPressed: _nextPage),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
-                  ),
-                ],
+                    Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            const Text(
+                              'What would you like to learn?',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF2D2F45),
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            NeuCard(
+                              child: DropdownButtonFormField<String>(
+                                initialValue: _selectedLanguage,
+                                decoration: const InputDecoration(labelText: 'Language'),
+                                hint: const Text('Select language'),
+                                items: const <DropdownMenuItem<String>>[
+                                  DropdownMenuItem<String>(value: 'English', child: Text('English')),
+                                  DropdownMenuItem<String>(value: 'isiZulu', child: Text('isiZulu')),
+                                  DropdownMenuItem<String>(value: 'French', child: Text('French')),
+                                  DropdownMenuItem<String>(value: 'Spanish', child: Text('Spanish')),
+                                ],
+                                onChanged: (String? value) => setState(() => _selectedLanguage = value),
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            GradientButton(
+                              label: 'Next →',
+                              onPressed: _selectedLanguage == null ? null : _nextPage,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            const Text(
+                              'Set your daily goal',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF2D2F45),
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            ...<int>[5, 10, 15].map((int goal) {
+                              final bool selected = _selectedGoal == goal;
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 10),
+                                child: GestureDetector(
+                                  onTap: () => setState(() => _selectedGoal = goal),
+                                  child: NeuCard(
+                                    small: true,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 14,
+                                    ),
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(16),
+                                        border: selected
+                                            ? const Border(
+                                                left: BorderSide(
+                                                  color: Color(0xFF5B6BE8),
+                                                  width: 3,
+                                                ),
+                                              )
+                                            : null,
+                                      ),
+                                      width: double.infinity,
+                                      child: Text(
+                                        '⏱ $goal minutes',
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight:
+                                              selected ? FontWeight.bold : FontWeight.w500,
+                                          color: const Color(0xFF2D2F45),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }),
+                            const SizedBox(height: 20),
+                            GradientButton(
+                              label: 'Get Started 🚀',
+                              isLoading: _isSubmitting,
+                              onPressed: (_selectedGoal == null || _isSubmitting)
+                                  ? null
+                                  : _finishOnboarding,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 8),

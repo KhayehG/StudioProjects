@@ -9,48 +9,70 @@ class OpenAiService {
       'https://api.groq.com/openai/v1/chat/completions';
 
   Future<String> sendMessage(
-      List<ChatMessage> history, String targetLanguage) async {
+    List<ChatMessage> history,
+    String targetLanguage, {
+    double averageQuizScore = 0.0,
+    List<String> completedLessonTitles = const <String>[],
+  }) async {
     try {
-      final messages = [
-        {
+      final String lessonsSummary = completedLessonTitles.isEmpty
+          ? 'none yet'
+          : completedLessonTitles.join(', ');
+
+      final String systemPrompt =
+          'You are an expert and encouraging language tutor for '
+          'LinguaFlow, a mobile language learning app. '
+          'The user is currently practising $targetLanguage. '
+          'Their current quiz average is ${averageQuizScore.toStringAsFixed(0)}%. '
+          'They have completed the following lessons: '
+          '$lessonsSummary. '
+          'Based on their progress, personalise your responses: '
+          'if their score is below 60%, use very simple vocabulary '
+          'and lots of encouragement; '
+          'if their score is 60–80%, introduce intermediate phrases '
+          'and gently correct mistakes; '
+          'if their score is above 80%, challenge them with more '
+          'complex sentences and natural conversation. '
+          'Always keep responses to 3 sentences maximum. '
+          'Always respond in English but include words or phrases '
+          'in $targetLanguage where helpful. '
+          'Never break character as a language tutor.';
+
+      final List<Map<String, dynamic>> messages = <Map<String, dynamic>>[
+        <String, dynamic>{
           'role': 'system',
-          'content':
-              'You are a friendly and encouraging language tutor '
-              'for the LinguaFlow app. The user is practicing '
-              '$targetLanguage. Keep responses to 2-3 sentences. '
-              'Gently correct grammar mistakes by showing the '
-              'correct version. Always encourage the user.',
+          'content': systemPrompt,
         },
-        ...history.map((m) => {
-          'role': m.role == 'assistant' ? 'assistant' : 'user',
-          'content': m.content,
-        }),
+        ...history.map((ChatMessage m) => <String, dynamic>{
+              'role': m.role == 'assistant' ? 'assistant' : 'user',
+              'content': m.content,
+            }),
       ];
 
       debugPrint('GROQ: Sending request...');
 
-      final response = await http.post(
-        Uri.parse(_endpoint),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ${AppConstants.groqApiKey}',
-        },
-        body: jsonEncode({
-          'model': 'llama-3.1-8b-instant',
-          'messages': messages,
-          'max_tokens': 300,
-          'temperature': 0.7,
-        }),
-      ).timeout(const Duration(seconds: 30));
+      final http.Response response = await http
+          .post(
+            Uri.parse(_endpoint),
+            headers: <String, String>{
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ${AppConstants.groqApiKey}',
+            },
+            body: jsonEncode(<String, dynamic>{
+              'model': 'llama-3.1-8b-instant',
+              'messages': messages,
+              'max_tokens': 300,
+              'temperature': 0.7,
+            }),
+          )
+          .timeout(const Duration(seconds: 30));
 
       debugPrint('GROQ: Status code: ${response.statusCode}');
       debugPrint('GROQ: Response: ${response.body}');
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return data['choices'][0]['message']['content']
-            .toString()
-            .trim();
+        final dynamic data = jsonDecode(response.body);
+        return data['choices'][0]['message']['content'].toString().trim();
       } else {
         debugPrint('GROQ ERROR: ${response.statusCode} ${response.body}');
         return 'Sorry, something went wrong. Please try again.';

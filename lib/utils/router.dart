@@ -14,9 +14,14 @@ import '../screens/lessons/lesson_detail_screen.dart';
 import '../screens/lessons/lessons_screen.dart';
 import '../screens/lessons/speech_practice_screen.dart';
 import '../screens/onboarding/onboarding_screen.dart';
+import '../screens/profile/certificates_screen.dart';
 import '../screens/profile/profile_screen.dart';
 import '../screens/progress/progress_screen.dart';
+import '../models/sign_lesson.dart';
 import '../screens/quiz/quiz_screen.dart';
+import '../screens/sign_language/sign_camera_screen.dart';
+import '../screens/sign_language/sign_detail_screen.dart';
+import '../screens/sign_language/sign_language_screen.dart';
 import '../screens/vocabulary/flashcard_screen.dart';
 import '../screens/vocabulary/vocabulary_screen.dart';
 import '../widgets/main_shell.dart';
@@ -101,8 +106,31 @@ final appRouter = GoRouter(
           path: '/speech-practice',
           builder: (c, s) => const SpeechPracticeScreen(),
         ),
+        GoRoute(
+          path: '/sign-language',
+          builder: (c, s) => const SignLanguageScreen(),
+        ),
+        GoRoute(
+          path: '/sign-detail',
+          builder: (c, s) {
+            final SignLesson lesson = s.extra as SignLesson;
+            return SignDetailScreen(lesson: lesson);
+          },
+        ),
+        GoRoute(
+          path: '/sign-camera',
+          builder: (c, s) {
+            final String? letter = s.extra as String?;
+            return SignCameraScreen(targetLetter: letter);
+          },
+        ),
         GoRoute(path: '/chatbot', builder: (c, s) => const ChatbotScreen()),
         GoRoute(path: '/progress', builder: (c, s) => const ProgressScreen()),
+        GoRoute(
+          path: '/certificates',
+          builder: (BuildContext c, GoRouterState s) =>
+              const CertificatesScreen(),
+        ),
         GoRoute(path: '/profile', builder: (c, s) => const ProfileScreen()),
       ],
     ),

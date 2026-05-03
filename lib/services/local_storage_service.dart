@@ -25,8 +25,8 @@ class LocalStorageService {
 
     return openDatabase(
       fullPath,
-      version: 1,
-      onCreate: (db, version) async {
+      version: 2,
+      onCreate: (Database db, int version) async {
         await db.execute('''
           CREATE TABLE lessons(
             id TEXT PRIMARY KEY,
@@ -35,9 +35,25 @@ class LocalStorageService {
             language TEXT,
             difficulty TEXT,
             contentSteps TEXT,
-            isCompleted INTEGER
+            isCompleted INTEGER,
+            `order` INTEGER NOT NULL DEFAULT 1,
+            xpReward INTEGER NOT NULL DEFAULT 10,
+            quizXpReward INTEGER NOT NULL DEFAULT 20
           )
         ''');
+      },
+      onUpgrade: (Database db, int oldVersion, int newVersion) async {
+        if (oldVersion < 2) {
+          await db.execute(
+            'ALTER TABLE lessons ADD COLUMN `order` INTEGER NOT NULL DEFAULT 1',
+          );
+          await db.execute(
+            'ALTER TABLE lessons ADD COLUMN xpReward INTEGER NOT NULL DEFAULT 10',
+          );
+          await db.execute(
+            'ALTER TABLE lessons ADD COLUMN quizXpReward INTEGER NOT NULL DEFAULT 20',
+          );
+        }
       },
     );
   }
@@ -54,6 +70,9 @@ class LocalStorageService {
         'difficulty': lesson.difficulty,
         'contentSteps': jsonEncode(lesson.contentSteps),
         'isCompleted': lesson.isCompleted ? 1 : 0,
+        'order': lesson.order,
+        'xpReward': lesson.xpReward,
+        'quizXpReward': lesson.quizXpReward,
       },
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
@@ -73,6 +92,9 @@ class LocalStorageService {
         contentSteps: List<String>.from(
           jsonDecode(map['contentSteps'] as String? ?? '[]') as List<dynamic>,
         ),
+        order: (map['order'] as int?) ?? 1,
+        xpReward: (map['xpReward'] as int?) ?? 10,
+        quizXpReward: (map['quizXpReward'] as int?) ?? 20,
         isCompleted: (map['isCompleted'] as int? ?? 0) == 1,
       );
     }).toList();
@@ -99,6 +121,9 @@ class LocalStorageService {
       contentSteps: List<String>.from(
         jsonDecode(map['contentSteps'] as String? ?? '[]') as List<dynamic>,
       ),
+      order: (map['order'] as int?) ?? 1,
+      xpReward: (map['xpReward'] as int?) ?? 10,
+      quizXpReward: (map['quizXpReward'] as int?) ?? 20,
       isCompleted: (map['isCompleted'] as int? ?? 0) == 1,
     );
   }
@@ -128,6 +153,9 @@ class LocalStorageService {
             'difficulty': lesson.difficulty,
             'contentSteps': jsonEncode(lesson.contentSteps),
             'isCompleted': lesson.isCompleted ? 1 : 0,
+            'order': lesson.order,
+            'xpReward': lesson.xpReward,
+            'quizXpReward': lesson.quizXpReward,
           },
           conflictAlgorithm: ConflictAlgorithm.replace,
         );

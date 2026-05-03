@@ -25,6 +25,11 @@ class ProgressService {
         userData['badgesEarned'] as List<dynamic>? ?? <dynamic>[];
     final int wordsReviewed = (userData['totalWordsReviewed'] as num?)?.toInt() ?? 0;
     final int currentStreak = (userData['currentStreak'] as num?)?.toInt() ?? 0;
+    final int xp = (userData['xp'] as num?)?.toInt() ?? 0;
+    final String currentLevel =
+        (userData['currentLevel'] as String?)?.trim().isNotEmpty == true
+            ? (userData['currentLevel'] as String).trim().toLowerCase()
+            : 'beginner';
 
     final List<Map<String, dynamic>> recentQuizScores = quizResultsSnapshot.docs.map((doc) {
       final data = doc.data();
@@ -51,6 +56,8 @@ class ProgressService {
       badgesEarned: badgesRaw.map((e) => e.toString()).toList(),
       recentQuizScores: recentQuizScores,
       averageQuizScore: averageQuizScore,
+      xp: xp,
+      currentLevel: currentLevel,
     );
   }
 

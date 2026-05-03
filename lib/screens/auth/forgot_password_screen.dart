@@ -2,6 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../../services/auth_service.dart';
+import '../../widgets/glass_card.dart';
+import '../../widgets/gradient_button.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -23,11 +25,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   }
 
   String? _validateEmail(String? value) {
-    final email = value?.trim() ?? '';
+    final String email = value?.trim() ?? '';
     if (email.isEmpty) {
       return 'Email is required';
     }
-    final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+    final RegExp emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
     if (!emailRegex.hasMatch(email)) {
       return 'Enter a valid email address';
     }
@@ -74,14 +76,33 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     }
   }
 
+  Widget _neuFieldWrapper({required Widget child}) {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFFEEF0F5),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: const <BoxShadow>[
+          BoxShadow(
+            color: Color(0xFFD1D3D8),
+            offset: Offset(4, 4),
+            blurRadius: 8,
+          ),
+          BoxShadow(
+            color: Colors.white,
+            offset: Offset(-4, -4),
+            blurRadius: 8,
+          ),
+        ],
+      ),
+      child: child,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF2196F3),
-        foregroundColor: Colors.white,
-        title: const Text('Forgot Password'),
-      ),
+      backgroundColor: const Color(0xFFEEF0F5),
+      appBar: AppBar(title: const Text('Forgot Password')),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -90,40 +111,67 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
-                const Text(
-                  'Enter your email and we will send you a reset link.',
-                  style: TextStyle(fontSize: 16),
-                ),
-                const SizedBox(height: 20),
-                TextFormField(
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(
-                    labelText: 'Email',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.email_outlined),
+                const Center(
+                  child: NeuCard(
+                    borderRadius: 50,
+                    width: 80,
+                    height: 80,
+                    padding: EdgeInsets.zero,
+                    child: Icon(Icons.language, size: 40, color: Color(0xFF5B6BE8)),
                   ),
-                  validator: _validateEmail,
                 ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  height: 48,
-                  child: ElevatedButton(
-                    onPressed: _isLoading ? null : _sendResetLink,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2196F3),
-                      foregroundColor: Colors.white,
-                    ),
-                    child: _isLoading
-                        ? const SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2.5,
-                              color: Colors.white,
-                            ),
-                          )
-                        : const Text('Send Reset Link'),
+                const SizedBox(height: 16),
+                const Text(
+                  'LinguaFlow',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF2D2F45),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Reset your password',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: Color(0xFF9A9EB5),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                NeuCard(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: <Widget>[
+                      const Text(
+                        'Enter your email and we will send you a reset link.',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Color(0xFF9A9EB5),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      _neuFieldWrapper(
+                        child: TextFormField(
+                          controller: _emailController,
+                          keyboardType: TextInputType.emailAddress,
+                          decoration: const InputDecoration(
+                            labelText: 'Email',
+                            prefixIcon: Icon(Icons.email_outlined),
+                          ),
+                          validator: _validateEmail,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      GradientButton(
+                        label: 'Send Reset Link',
+                        isLoading: _isLoading,
+                        onPressed: _isLoading ? null : _sendResetLink,
+                      ),
+                    ],
                   ),
                 ),
               ],

@@ -14,10 +14,14 @@ class SpeechService {
     return _isInitialized;
   }
 
-  Future<void> startListening(Function(String) onResult) async {
+  Future<void> startListening(
+    Function(String) onResult, {
+    String? localeId,
+  }) async {
     if (!_isInitialized) await requestPermission();
     await _speech.listen(
       onResult: (result) => onResult(result.recognizedWords),
+      localeId: localeId,
       listenFor: const Duration(seconds: 10),
       pauseFor: const Duration(seconds: 3),
     );

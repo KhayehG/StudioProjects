@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/lesson.dart';
 import 'local_storage_service.dart';
+import 'xp_service.dart';
 
 class LessonService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -58,14 +59,24 @@ class LessonService {
   Future<void> markLessonComplete(
     String lessonId,
     String userId,
-    String lessonTitle,
-  ) async {
+    String lessonTitle, {
+    bool quizPassed = false,
+  }) async {
+    if (!quizPassed) {
+      return;
+    }
+
     final DocumentReference<Map<String, dynamic>> userRef =
         _firestore.collection('users').doc(userId);
     final DocumentSnapshot<Map<String, dynamic>> userSnapshot = await userRef.get();
     final Map<String, dynamic> userData = userSnapshot.data() ?? <String, dynamic>{};
     final List<dynamic> completedBefore =
         userData['completedLessons'] as List<dynamic>? ?? <dynamic>[];
+
+    final DocumentSnapshot<Map<String, dynamic>> lessonSnap =
+        await _firestore.collection('lessons').doc(lessonId).get();
+    final Map<String, dynamic>? lessonData = lessonSnap.data();
+    final Lesson lesson = Lesson.fromMap(lessonSnap.id, lessonData ?? <String, dynamic>{});
 
     await userRef.set(
       <String, dynamic>{
@@ -78,6 +89,8 @@ class LessonService {
 
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString('lastLessonTitle', lessonTitle);
+
+    await XpService().awardXp(userId, lesson.xpReward);
 
     if (completedBefore.isEmpty) {
       await userRef.set(
