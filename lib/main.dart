@@ -20,6 +20,7 @@ class LinguaFlowApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       title: 'LinguaFlow',
+      debugShowCheckedModeBanner: false,
       routerConfig: appRouter,
       theme: appTheme,
     );
